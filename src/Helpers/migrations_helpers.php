@@ -156,7 +156,7 @@ if (!function_exists('createDefaultRevisionsTableFields')) {
         $table->{twillIntegerMethod()}('user_id')->unsigned()->nullable();
 
         $table->timestamps();
-        $table->json('payload');
+        $table->longText('payload');
         $table->foreign("{$tableNameSingular}_id")->references('id')->on("{$tableNamePlural}")->onDelete('cascade');
         $table->foreign('user_id')->references('id')->on(config('twill.users_table', 'twill_users'))->onDelete('set null');
     }
