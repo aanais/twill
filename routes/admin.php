@@ -14,8 +14,9 @@ if (config('twill.enabled.media-library')) {
         Route::put('medias/single-update', ['as' => 'medias.single-update', 'uses' => 'MediaLibraryController@singleUpdate']);
         Route::put('medias/bulk-update', ['as' => 'medias.bulk-update', 'uses' => 'MediaLibraryController@bulkUpdate']);
         Route::put('medias/bulk-delete', ['as' => 'medias.bulk-delete', 'uses' => 'MediaLibraryController@bulkDelete']);
+        Route::post('medias/replace', ['as' => 'medias.replace', 'uses' => 'MediaLibraryController@replace']);
         Route::get('medias/tags', ['as' => 'medias.tags', 'uses' => 'MediaLibraryController@tags']);
-        Route::resource('medias', 'MediaLibraryController', ['only' => ['index', 'store', 'destroy']]);
+        Route::resource('medias', 'MediaLibraryController', ['only' => ['index', 'store',  'destroy']]);
     });
 }
 
@@ -26,6 +27,7 @@ if (config('twill.enabled.file-library')) {
         Route::put('files/single-update', ['as' => 'files.single-update', 'uses' => 'FileLibraryController@singleUpdate']);
         Route::put('files/bulk-update', ['as' => 'files.bulk-update', 'uses' => 'FileLibraryController@bulkUpdate']);
         Route::put('files/bulk-delete', ['as' => 'files.bulk-delete', 'uses' => 'FileLibraryController@bulkDelete']);
+        Route::post('files/replace', ['as' => 'files.replace', 'uses' => 'FileLibraryController@replace']);
         Route::get('files/tags', ['as' => 'files.tags', 'uses' => 'FileLibraryController@tags']);
         Route::resource('files', 'FileLibraryController', ['only' => ['index', 'store', 'destroy']]);
     });

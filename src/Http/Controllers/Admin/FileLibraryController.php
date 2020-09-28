@@ -3,6 +3,7 @@
 namespace A17\Twill\Http\Controllers\Admin;
 
 use A17\Twill\Http\Requests\Admin\FileRequest;
+use A17\Twill\Models\File;
 use A17\Twill\Services\Uploader\SignAzureUpload;
 use A17\Twill\Services\Uploader\SignS3Upload;
 use A17\Twill\Services\Uploader\SignUploadListener;
@@ -164,6 +165,30 @@ class FileLibraryController extends ModuleController implements SignUploadListen
         }
 
         return $this->responseFactory->json(['media' => $this->buildFile($file), 'success' => true], 200);
+    }
+
+    public function replace($parentModuleId = null)
+    {
+        $request = $this->app->make(FileRequest::class);
+
+        if ($this->endpointType === 'local') {
+            $file = $this->replaceFile($request);
+        } else {
+            // Probably won't work for S3
+            $file = $this->storeReference($request);
+        }
+
+        return $this->responseFactory->json(['media' => $this->buildFile($file), 'success' => true], 200);
+    }
+
+    protected function replaceFile($request)
+    {
+        $file = File::find($request->input('id'));
+        $disk = $this->config->get('twill.file_library.disk');
+        $request->file('qqfile')->storeAs(substr($file->uuid, 0, strrpos($file->uuid, '/')), $file->filename, $disk);
+        $file->size = $request->input('qqtotalfilesize');
+        $file->save();
+        return $file;
     }
 
     /**

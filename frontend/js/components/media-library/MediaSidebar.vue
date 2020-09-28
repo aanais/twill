@@ -22,6 +22,7 @@
         <a17-buttonbar class="mediasidebar__buttonbar" v-if="hasMedia">
           <!-- Actions -->
           <a v-if="hasSingleMedia" :href="firstMedia.original" download><span v-svg symbol="download"></span></a>
+          <button v-if="hasSingleMedia && !isImage" type="button" @click="replaceSelectedMedia"><span v-svg symbol="upload"></span></button>
           <button v-if="allowDelete && authorized" type="button" @click="deleteSelectedMediasValidation">
             <span v-svg symbol="trash"></span>
           </button>
@@ -29,6 +30,15 @@
             <span v-svg symbol="trash"></span></button>
         </a17-buttonbar>
       </div>
+
+      <a17-replacer v-if="uploading" @loaded="refreshMedia" :media="firstMedia" :type="type"/>
+
+      <form v-if="hasSingleMedia && !isImage" class="mediasidebar__inner mediasidebar__form">
+        <a17-textfield size="small" label="File url (for linking from the website)" name="link_url" :initialValue="firstMediaSimpleUrl" :readonly="true"/>
+
+        <a17-textfield size="small" label="File url (for sharing)" name="sharing_url" :initialValue="firstMedia.original" :readonly="true"/>
+
+      </form>
 
       <form v-if="hasMedia" ref="form" class="mediasidebar__inner mediasidebar__form" @submit="submit">
         <span class="mediasidebar__loader" v-if="loading"><span class="loader loader--small"><span></span></span></span>
@@ -125,12 +135,14 @@
   import a17VueFilters from '@/utils/filters.js'
   import a17MediaSidebarUpload from '@/components/media-library/MediaSidebarUpload'
   import a17Langswitcher from '@/components/LangSwitcher'
+  import a17Replacer from '@/components/media-library/Replacer'
 
   export default {
     name: 'A17MediaSidebar',
     components: {
       'a17-mediasidebar-upload': a17MediaSidebarUpload,
-      'a17-langswitcher': a17Langswitcher
+      'a17-langswitcher': a17Langswitcher,
+      'a17-replacer': a17Replacer
     },
     props: {
       medias: {
@@ -161,6 +173,7 @@
       return {
         loading: false,
         focused: false,
+        uploading: false,
         previousSavedData: {},
         fieldsRemovedFromBulkEditing: []
       }
@@ -174,6 +187,9 @@
     computed: {
       firstMedia: function () {
         return this.hasMedia ? this.medias[0] : null
+      },
+      firstMediaSimpleUrl: function () {
+        return '/' + this.firstMedia.original.split('/').splice(3).join('/')
       },
       hasMultipleMedias: function () {
         return this.medias.length > 1
@@ -247,6 +263,10 @@
       })
     },
     methods: {
+      refreshMedia: function (media) {
+        // This does not work for some reason
+        this.uploading = false
+      },
       deleteSelectedMediasValidation: function () {
         if (this.loading) return false
 
@@ -263,6 +283,9 @@
         } else {
           this.deleteSelectedMedias()
         }
+      },
+      replaceSelectedMedia: function () {
+        this.uploading = true
       },
       deleteSelectedMedias: function () {
         if (this.loading) return false

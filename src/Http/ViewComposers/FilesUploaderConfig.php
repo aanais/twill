@@ -62,6 +62,18 @@ class FilesUploaderConfig
             },
         ];
 
+        $replaceEndpointByType = [
+            'local' => function () {
+                return $this->urlGenerator->route('admin.file-library.files.replace');
+            },
+            's3' => function () use ($libraryDisk) {
+                return s3Endpoint($libraryDisk);
+            },
+            'azure' => function () use ($libraryDisk) {
+                return azureEndpoint($libraryDisk);
+            },
+        ];
+
         $signatureEndpointByType = [
             'local' => null,
             's3' => $this->urlGenerator->route('admin.file-library.sign-s3-upload'),
@@ -71,6 +83,7 @@ class FilesUploaderConfig
         $filesUploaderConfig = [
             'endpointType' => $endpointType,
             'endpoint' => $endpointByType[$endpointType](),
+            'replaceEndpoint' => $replaceEndpointByType[$endpointType](),
             'successEndpoint' => $this->urlGenerator->route('admin.file-library.files.store'),
             'signatureEndpoint' => $signatureEndpointByType[$endpointType],
             'endpointBucket' => $this->config->get('filesystems.disks.' . $libraryDisk . '.bucket', 'none'),
