@@ -5,8 +5,8 @@
     data-container="container{{ $fieldName }}"
     data-csrf="{{ csrf_token() }}"
     >
-    <input type="hidden" name="session_id" value="{{ $item->id }}">
-    <input type="text" name="title" placeholder="Title">
+    <input type="hidden" name="{{ $foreignKey }}" value="{{ $item->id }}">
+    <input type="text" name="{{ $titleColumn ?? 'title' }}" placeholder="{{ $titlePlaceholder ?? 'Title' }}">
     <button type="button">Add a new {{ $label }}</button>
 </div>
 
