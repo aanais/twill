@@ -212,7 +212,6 @@ abstract class ModuleRepository
     {
         return DB::transaction(function () use ($fields) {
             $original_fields = $fields;
-
             $fields = $this->prepareFieldsBeforeCreate($fields);
 
             $object = $this->model->create(Arr::except($fields, $this->getReservedFields()));
@@ -227,6 +226,11 @@ abstract class ModuleRepository
 
             return $object;
         }, 3);
+    }
+
+    public function newModel($data)
+    {
+        return new $this->model($data);
     }
 
     /**

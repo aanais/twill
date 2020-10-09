@@ -3,6 +3,11 @@
 namespace A17\Twill\Http\Controllers\Admin;
 
 use A17\Twill\Helpers\FlashLevel;
+use A17\Twill\Http\ViewComposers\ActiveNavigation;
+use A17\Twill\Http\ViewComposers\CurrentUser;
+use A17\Twill\Http\ViewComposers\FilesUploaderConfig;
+use A17\Twill\Http\ViewComposers\Localization;
+use A17\Twill\Http\ViewComposers\MediasUploaderConfig;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -1675,5 +1680,66 @@ abstract class ModuleController extends Controller
     protected function fireEvent($input = [])
     {
         fireCmsEvent('cms-module.saved', $input);
+    }
+
+
+    public function partial($id)
+    {
+        if (config('twill.enabled.users-management')) {
+            View::composer([$this->viewPrefix.'.*'], CurrentUser::class);
+        }
+
+        if (config('twill.enabled.media-library')) {
+            View::composer($this->viewPrefix.'.*', MediasUploaderConfig::class);
+        }
+
+        if (config('twill.enabled.file-library')) {
+            View::composer($this->viewPrefix.'.*', FilesUploaderConfig::class);
+        }
+
+        View::composer($this->viewPrefix.'.*', ActiveNavigation::class);
+
+        View::composer([$this->viewPrefix.'.*'], function ($view) {
+            $with = array_merge([
+                'renderForBlocks' => false,
+                'renderForModal' => false,
+            ], $view->getData());
+
+            return $view->with($with);
+        });
+
+        View::composer([$this->viewPrefix.'.*'], Localization::class);
+
+        $view = View::make("$this->viewPrefix.form_partial", $this->form($submoduleId ?? $id));
+        return $view;
+    }
+
+    public function partialDelete($id)
+    {
+        $this->repository->delete($id);
+    }
+
+    public function partialInsert()
+    {
+        $item = $this->repository->newModel(request()->input());
+        $item->active = 1;
+        $item->published = 1;
+        $item->save();
+
+        return response()->json([
+            'id' => $item->id,
+            'item' => moduleRoute(
+                $this->moduleName,
+                $this->routePrefix,
+                'partial',
+                ['id' => $item->id, 'opened' => 1]
+            ),
+            'delete' => moduleRoute(
+                $this->moduleName,
+                $this->routePrefix,
+                'partial.delete',
+                ['id' => $item->id]
+            ),
+        ]);
     }
 }

@@ -235,6 +235,17 @@ class RouteServiceProvider extends ServiceProvider
                 }
             }
 
+            // Partials routes
+            Route::get("/{$prefixSlug}/partial/{id}")
+                ->uses("{$className}Controller@partial")
+                ->name("{$customRoutePrefix}.partial");
+            Route::post("/{$prefixSlug}/partial")
+                ->uses("{$className}Controller@partialInsert")
+                ->name("{$customRoutePrefix}.partial.insert");
+            Route::get("/{$prefixSlug}/partial/{id}/delete")
+                ->uses("{$className}Controller@partialDelete")
+                ->name("{$customRoutePrefix}.partial.delete");
+
             if ($resource) {
                 $customRoutePrefix = !empty($groupPrefix) ? "{$groupPrefix}." : "";
                 Route::group(['as' => $customRoutePrefix], function () use ($slug, $className, $resource_options) {
