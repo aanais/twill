@@ -16,9 +16,9 @@
             <div class="item" data-id="{{ $related->id }}"
                 data-delete-url="{{ route($module.'.partial.delete', ['id' => $related->id]) }}"
             >
-                <div class="delete" onclick="deleteItem({{ $related->id }})"></div>
+                <div class="delete" onclick="deleteItem{{ $fieldName }}({{ $related->id }})"></div>
                 <iframe style="width: 100%; height: 100px"
-                    onload="updateIframeHeight()"
+                    onload="updateIframeHeight{{ $fieldName }}()"
                     src="{{ route($module.'.partial', ['id' => $related->id]) }}"></iframe>
             </div>
         @endforeach
@@ -53,14 +53,14 @@
                         item.dataset.deleteUrl = json.delete;
                         var deleteDiv = document.createElement('div');
                         deleteDiv.classList.add('delete');
-                        deleteDiv.addEventListener('click', function() { deleteItem(json.id) });
+                        deleteDiv.addEventListener('click', function() { deleteItem{{ $fieldName }}(json.id) });
 
                         var iframe = document.createElement('iframe');
                         iframe.setAttribute('src', json.item);
                         iframe.style.width = '100%';
                         iframe.style.height = "100px";
                         iframe.onload = function() {
-                            updateIframeHeight();
+                            updateIframeHeight{{ $fieldName }}();
                             window.scrollTo({left: 0, top: iframe.getBoundingClientRect().top + window.scrollY, behavior: 'smooth'})
                         };
                         item.appendChild(deleteDiv);
@@ -79,10 +79,10 @@
             });
         });
 
-        tick();
+        tick{{ $fieldName }}();
     });
 
-    function deleteItem(id) {
+    function deleteItem{{ $fieldName }}(id) {
         if (window.confirm("Are you sure you want to delete this item ?")) {
             var item = document.getElementById('container{{ $fieldName }}').querySelector('[data-id="' + id+ '"]');
             var deleteUrl = item.dataset.deleteUrl;
@@ -93,12 +93,12 @@
         }
     }
 
-    function tick() {
-        setTimeout(tick, 100);
-        updateIframeHeight();
+    function tick{{ $fieldName }}() {
+        setTimeout(tick{{ $fieldName }}, 100);
+        updateIframeHeight{{ $fieldName }}();
     }
 
-    function updateIframeHeight() {
+    function updateIframeHeight{{ $fieldName }}() {
         document.getElementById('container{{ $fieldName }}').querySelectorAll('iframe').forEach(function (iframe) {
             if (!iframe.contentWindow.document || !iframe.contentWindow.document.body) {
                 return;
