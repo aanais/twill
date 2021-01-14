@@ -819,6 +819,7 @@ abstract class ModuleController extends Controller
 
         $options = [
             'moduleName' => $this->moduleName,
+            'viewPrefix' => $this->viewPrefix,
             'reorder' => $this->getIndexOption('reorder'),
             'create' => $this->getIndexOption('create'),
             'duplicate' => $this->getIndexOption('duplicate'),

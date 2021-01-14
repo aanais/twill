@@ -2,7 +2,7 @@
   <a17-inputframe :error="error" :note="note" :name="name">
     <div class="singleCheckbox">
       <span class="checkbox">
-        <input type="checkbox" class="checkbox__input" :class="checkboxClasses" value="true" :name="name + '[' + randKey + ']'" :id="uniqId" :disabled="disabled" :checked="checkedValue">
+        <input type="checkbox" class="checkbox__input" @change="onChange" :class="checkboxClasses" value="true" :name="name + '[' + randKey + ']'" :id="uniqId" :disabled="disabled" :checked="checkedValue">
         <label class="checkbox__label" :for="uniqId" @click.prevent="changeCheckbox">{{ label }} <span class="checkbox__icon"><span v-svg symbol="check"></span></span></label>
       </span>
     </div>
@@ -66,6 +66,10 @@
     methods: {
       updateFromStore: function (newValue) { // called from the formStore mixin
         this.checkedValue = newValue
+      },
+      onChange: function (event) {
+        const newValue = event.target.value
+        this.$emit('change', newValue)
       },
       changeCheckbox: function () {
         this.checkedValue = !this.checkedValue

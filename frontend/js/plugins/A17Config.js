@@ -6,6 +6,7 @@ import a17Button from '@/components/Button.vue'
 import a17Infotip from '@/components/Infotip.vue'
 import a17Select from '@/components/Select.vue'
 import a17VSelect from '@/components/VSelect.vue'
+import a17SlimSelect from '@/components/SlimSelect.vue'
 import a17Inputframe from '@/components/InputFrame.vue'
 import a17ColorField from '@/components/ColorField.vue'
 import a17Textfield from '@/components/Textfield.vue'
@@ -69,6 +70,7 @@ const A17Config = {
     Vue.component('a17-singleselect', a17Singleselect)
     Vue.component('a17-select', a17Select)
     Vue.component('a17-vselect', a17VSelect)
+    Vue.component('a17-slimselect', a17SlimSelect)
     Vue.component('a17-locale', a17Locale)
     Vue.component('a17-dropdown', a17Dropdown)
     Vue.component('a17-buttonbar', a17Buttonbar)

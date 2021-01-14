@@ -197,7 +197,7 @@
   .modal__window {
     background:$color__background;
     width: calc(100vw - 40px);
-    max-width:650px;
+    max-width:850px;
     position: relative;
     border-radius:2px;
     display:flex;

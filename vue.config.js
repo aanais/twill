@@ -85,10 +85,10 @@ let plugins = [
 ]
 
 if (!isProd) {
-  plugins.push(new WebpackNotifierPlugin({
+  /*plugins.push(new WebpackNotifierPlugin({
     title: 'Twill',
     contentImage: path.join(__dirname, 'docs/.vuepress/public/favicon-180.png')
-  }))
+  }))*/
 }
 
 const config = {

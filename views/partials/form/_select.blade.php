@@ -9,13 +9,15 @@
     $note = $note ?? false;
     $placeholder = $placeholder ?? false;
     $required = $required ?? false;
-    $searchable = $searchable ?? false;
+    $searchable = $searchable ?? true;
+    $multiple = $multiple ?? false;
 
     // do not use for now, but this will allow you to create a new option directly from the form
     $addNew = $addNew ?? false;
     $moduleName = $moduleName ?? null;
     $storeUrl = $storeUrl ?? '';
     $inModal = $fieldsInModal ?? false;
+    $optgroup = $optgroup ?? null;
 @endphp
 
 @if ($unpack ?? false)
@@ -62,7 +64,7 @@
             </div>
         @endif
     </a17-select>
-@else
+@elseif ($vSelect ?? false)
     <a17-vselect
         label="{{ $label }}"
         @include('twill::partials.form.utils._field_name')
@@ -89,10 +91,49 @@
             </div>
         @endif
     </a17-vselect>
+@else
+    <a17-slimselect
+        label="{{ $label }}"
+        @include('twill::partials.form.utils._field_name')
+        :options='{{ json_encode($options) }}'
+        @if ($emptyText ?? false) empty-text="{{ $emptyText }}" @endif
+        @if ($placeholder) placeholder="{{ $placeholder }}" @endif
+        @if (isset($default)) :selected="{{ json_encode(collect($options)->first(function ($option) use ($default) {
+            return $option['value'] === $default;
+        })) }}" @endif
+        @if ($required) :required="true" @endif
+        @if ($large ?? false) :large-items="true" @endif
+        @if ($multiple) :multiple="true" @endif
+        @if ($allowDeselect ?? false || ($multiple && !isset($allowDeselect))) :allow-deselect-option="true" @endif
+        @if (!($closeOnSelect ?? true) || ($multiple && empty($closeOnSelect))) :close-on-select="false" @endif
+        @if ($inModal) :in-modal="true" @endif
+        @if ($addNew) add-new='{{ $storeUrl }}' @elseif ($note) note='{{ $note }}' @endif
+        :has-default-store="true"
+        @if ($searchable) :searchable="true" @endif
+        @if ($optgroup) optgroup="{{ $optgroup }}" @endif
+        size="large"
+        in-store="inputValue"
+    >
+        @if($addNew)
+            <div slot="addModal">
+                @php
+                    unset($note, $placeholder, $emptyText, $default, $required, $inModal, $addNew, $options);
+                @endphp
+                @partialView(($moduleName ?? null), 'create', ['renderForModal' => true, 'fieldsInModal' => true])
+            </div>
+        @endif
+    </a17-slimselect>
 @endif
 
 @unless($renderForBlocks || $renderForModal || (!isset($item->$name) && null == $formFieldsValue = getFormFieldsValue($form_fields, $name)))
 @push('vuexStore')
-    @include('twill::partials.form.utils._selector_input_store')
+    @if ($multiple)
+        window['{{ config('twill.js_namespace') }}'].STORE.form.fields.push({
+            name: '{{ $name }}',
+            value: {!! json_encode(isset($item) && isset($item->$name) ? Arr::pluck($item->$name, 'id') : $formFieldsValue) !!}
+        })
+    @else
+        @include('twill::partials.form.utils._selector_input_store')
+    @endif
 @endpush
 @endunless

@@ -3,15 +3,8 @@
     'label' => $titleFormKey === 'title' ? twillTrans('twill::lang.modal.title-field') : ucfirst($titleFormKey),
     'translated' => $translateTitle ?? false,
     'required' => true,
-    'onChange' => 'formatPermalink'
+    'onChange' => 'formatPermalink',
+    'ref' => 'permalinkField',
 ])
 
-@if ($permalink ?? true)
-    @formField('input', [
-        'name' => 'slug',
-        'label' => twillTrans('twill::lang.modal.permalink-field'),
-        'translated' => true,
-        'ref' => 'permalink',
-        'prefix' => $permalinkPrefix ?? ''
-    ])
-@endif
+@include('twill::partials.create_permalink')

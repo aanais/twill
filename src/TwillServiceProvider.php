@@ -344,6 +344,45 @@ class TwillServiceProvider extends ServiceProvider
             return $this->includeView('partials.form._', $expression);
         });
 
+        $blade->directive('partialViewWithPrefix', function ($expression) {
+
+            $expressionAsArray = str_getcsv($expression, ',', '\'');
+
+            list($moduleName, $viewPrefix, $viewName) = $expressionAsArray;
+            $partialNamespace = 'twill::partials';
+
+            $viewModule = "'admin.'.$moduleName.'.{$viewName}'";
+            $viewApplication = "'admin.partials.{$viewName}'";
+            $viewModuleTwill = "'twill::'.$moduleName.'.{$viewName}'";
+            $viewForced = "$viewPrefix .'.{$viewName}'";
+            $view = $partialNamespace . "." . $viewName;
+
+            if (!isset($moduleName) || is_null($moduleName)) {
+                $viewModule = $viewApplication;
+            }
+
+            $expression = explode(',', $expression);
+            $expression = array_slice($expression, 3);
+            $expression = "(" . implode(',', $expression) . ")";
+            if ($expression === "()") {
+                $expression = '([])';
+            }
+
+            return "<?php
+            if( view()->exists($viewForced)) {
+                echo \$__env->make($viewForced, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            } elseif( view()->exists($viewModule)) {
+                echo \$__env->make($viewModule, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            } elseif( view()->exists($viewApplication)) {
+                echo \$__env->make($viewApplication, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            } elseif( view()->exists($viewModuleTwill)) {
+                echo \$__env->make($viewModuleTwill, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            } elseif( view()->exists('$view')) {
+                echo \$__env->make('$view', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            }
+            ?>";
+        });
+
         $blade->directive('partialView', function ($expression) {
 
             $expressionAsArray = str_getcsv($expression, ',', '\'');
@@ -354,6 +393,7 @@ class TwillServiceProvider extends ServiceProvider
             $viewModule = "'admin.'.$moduleName.'.{$viewName}'";
             $viewApplication = "'admin.partials.{$viewName}'";
             $viewModuleTwill = "'twill::'.$moduleName.'.{$viewName}'";
+            $viewForced = "'{$viewName}'";
             $view = $partialNamespace . "." . $viewName;
 
             if (!isset($moduleName) || is_null($moduleName)) {
@@ -368,7 +408,9 @@ class TwillServiceProvider extends ServiceProvider
             }
 
             return "<?php
-            if( view()->exists($viewModule)) {
+            if( view()->exists($viewForced)) {
+                echo \$__env->make($viewForced, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
+            } elseif( view()->exists($viewModule)) {
                 echo \$__env->make($viewModule, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
             } elseif( view()->exists($viewApplication)) {
                 echo \$__env->make($viewApplication, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();

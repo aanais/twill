@@ -12,8 +12,13 @@ export default {
   methods: {
     formatPermalink: function (newValue) {
       const permalinkRef = this.$refs.permalink
+      const updatepermalinkRef = this.$refs.updatePermalink
 
       if (!permalinkRef) return
+
+      if (updatepermalinkRef && !updatepermalinkRef.checkedValue) {
+        return
+      }
 
       if (newValue) {
         let text = ''
