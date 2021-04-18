@@ -67,7 +67,7 @@
     <a17-vselect
         label="{{ $label }}"
         @include('twill::partials.form.utils._field_name')
-        :options='{{ $options }}'
+        :options='{{ json_encode($options) }}'
         @if ($emptyText ?? false) empty-text="{{ $emptyText }}" @endif
         @if ($placeholder) placeholder="{{ $placeholder }}" @endif
         @if (isset($default)) :selected="{{ json_encode(collect($options)->first(function ($option) use ($default) {
