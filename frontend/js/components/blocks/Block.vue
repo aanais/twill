@@ -32,7 +32,8 @@
       </div>
     </div>
     <div class="block__content" :aria-hidden="!visible ? true : null">
-      <component v-bind:is="`${block.type}`" :name="componentName(block.id)" v-bind="block.attributes" key="`form_${block.type}_${block.id}`"><!-- dynamic components --></component>
+      <a17-publish-block  name="publication"  key="`form_date_${block.type}_${block.id}`">publication component</a17-publish-block>
+      <component v-bind:is="`${block.type}`" :name="componentName(block.id)" v-bind="block.attributes" key="`form_${block.type}_${block.id}`">dynamic components</component>
       <!-- Block validation input frame, to display errors -->
       <a17-inputframe size="small" label="" :name="`block.${block.id}`"/>
     </div>
@@ -209,6 +210,8 @@
     font-size:0px;
     padding-top:(50px - 26px) / 2;
     padding-bottom:(50px - 26px) / 2;
+    display: flex;
+    align-items: center;
 
     > * {
       margin-left: 10px;

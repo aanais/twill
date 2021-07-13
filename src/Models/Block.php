@@ -22,10 +22,12 @@ class Block extends BaseModel
         'type',
         'child_key',
         'parent_id',
+        'publication'
     ];
 
     protected $casts = [
         'content' => 'array',
+        'publication' => 'array'
     ];
 
     protected $with = ['medias'];

@@ -35,6 +35,9 @@ import a17DatePicker from '@/components/DatePicker.vue'
 // Media Library
 import a17MediaLibrary from '@/components/media-library/MediaLibrary.vue'
 
+// Customs
+import a17PublishBlock from '@/components/customs/PublishBlock.vue'
+
 // Plugins
 import VueTimeago from 'vue-timeago'
 import get from 'lodash/get'
@@ -82,6 +85,9 @@ const A17Config = {
 
     // Media Library
     Vue.component('a17-medialibrary', a17MediaLibrary)
+
+    // Customs
+    Vue.component('a17-publish-block', a17PublishBlock)
 
     // Globale Vue mixin : Use global mixins sparsely and carefully!
     Vue.mixin({

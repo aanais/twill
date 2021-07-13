@@ -66,6 +66,14 @@ const mutations = {
       state.blocks.push(block) // or add a new block at the end of the list
     }
   },
+  [CONTENT.UPDATE_PUBLICATION_BLOCK] (state, data) {
+    if (state.blocks[data.index].publication.length === 0) {
+      state.blocks[data.index].publication = {
+        content: {}
+      }
+    }
+    state.blocks[data.index].publication.content[data.lang] = data.date
+  },
   [CONTENT.MOVE_BLOCK] (state, fromTo) {
     if (fromTo.newIndex >= state.blocks.length) {
       let k = fromTo.newIndex - state.blocks.length

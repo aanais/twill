@@ -188,6 +188,7 @@ trait HandleBlocks
                     'type' => $blockTypeConfig['component'],
                     'title' => $blockTypeConfig['title'],
                     'attributes' => $blockTypeConfig['attributes'] ?? [],
+                    'publication' => $block->publication ?? []
                 ];
 
                 if ($isInRepeater) {
@@ -204,6 +205,15 @@ trait HandleBlocks
 
                 $fields['blocksFields'][] = Collection::make($block['content'])->filter(function ($value, $key) {
                     return $key !== "browsers";
+                })->map(function ($value, $key) use ($block) {
+                    return [
+                        'name' => "blocks[$block->id][$key]",
+                        'value' => $value,
+                    ];
+                })->filter()->values()->toArray();
+
+                $fields['blocksFields'][] = Collection::make($block['publication'])->filter(function ($value, $key) {
+                    return $key == "publication";
                 })->map(function ($value, $key) use ($block) {
                     return [
                         'name' => "blocks[$block->id][$key]",
