@@ -4,7 +4,6 @@ vendor/
 !frontend/scss/vendor
 /node_modules
 assets/dist/*
-dist
 frontend/js/components/blocks/customs/*
 !frontend/js/components/customs/.keep
 .DS_Store

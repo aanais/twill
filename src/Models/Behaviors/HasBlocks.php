@@ -16,24 +16,21 @@ trait HasBlocks
     {
         return $this->blocks->where('parent_id', null)->map(function ($block) use ($blockViewMappings, $renderChilds, $data) {
             //Check if publication date
-            if ($block->publication) {
+            if (!empty($block->publication['content'][config('app.locale')])) {
                 $publicationDate = Carbon::make($block->publication['content'][config('app.locale')]);
                 //Check if the block can be visible
-                if($publicationDate->greaterThan(Carbon::now())) {
+                if ($publicationDate->greaterThan(Carbon::now())) {
                     return false;
                 }
             }
             if ($renderChilds) {
                 $childBlocks = $this->blocks->where('parent_id', $block->id);
-                
                 $renderedChildViews = $childBlocks->map(function ($childBlock) use ($blockViewMappings, $data) {
                     $view = $this->getBlockView($childBlock->type, $blockViewMappings);
                     return view($view, $data)->with('block', $childBlock)->render();
                 })->implode('');
             }
-            
             $block->childs = $this->blocks->where('parent_id', $block->id);
-            
             $view = $this->getBlockView($block->type, $blockViewMappings);
 
             return view($view, $data)->with('block', $block)->render() . ($renderedChildViews ?? '');
