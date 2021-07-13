@@ -188,7 +188,7 @@ trait HandleBlocks
                     'type' => $blockTypeConfig['component'],
                     'title' => $blockTypeConfig['title'],
                     'attributes' => $blockTypeConfig['attributes'] ?? [],
-                    'publication' => $block->publication ?? []
+                    'publication' => $block->publication ?? [],
                 ];
 
                 if ($isInRepeater) {
