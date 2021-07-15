@@ -98,7 +98,7 @@ let plugins = [
   new WebpackAssetsManifest({
     output: `${assetsDir}/twill-manifest.json`,
     publicPath: true,
-    customize(entry, original, manifest, asset) {
+    customize (entry, original, manifest, asset) {
       const search = new RegExp(`${assetsDir.replace(/\//gm, '\/')}\/(css|fonts|js|icons)\/`, 'gm')
       return {
         key: entry.key.replace(search, '')
@@ -146,9 +146,9 @@ const config = {
     resolve: {
       alias: {
         'prosemirror-tables': path.join(__dirname, 'node_modules/prosemirror-tables/src/index.js'),
-        'prosemirror-state': path.join(__dirname, 'node_modules/prosemirror-state/src/index.js'),
-        'prosemirror-view': path.join(__dirname, 'node_modules/prosemirror-view/src/index.js'),
-        'prosemirror-transform': path.join(__dirname, 'node_modules/prosemirror-transform/src/index.js')
+        'prosemirror-state' : path.join(__dirname, 'node_modules/prosemirror-state/src/index.js'),
+        'prosemirror-view' : path.join(__dirname, 'node_modules/prosemirror-view/src/index.js'),
+        'prosemirror-transform' : path.join(__dirname, 'node_modules/prosemirror-transform/src/index.js')
       }
     },
     plugins,
