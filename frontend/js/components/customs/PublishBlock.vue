@@ -58,14 +58,12 @@
 
 <style lang="scss" scoped>
 .block-date {
-      margin-bottom: 5em;
       .datePicker  {
         margin: 0;
       }
     }
 
   .input {
-    margin-top:35px;
     position: relative;
   }
 

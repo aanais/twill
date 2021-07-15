@@ -74,6 +74,14 @@ const mutations = {
     }
     state.blocks[data.index].publication.content[data.lang] = data.date
   },
+  [CONTENT.UPDATE_LOCALES_BLOCK] (state, data) {
+    if (state.blocks[data.index].locales.length === 0) {
+      state.blocks[data.index].locales = {
+        value: []
+      }
+    }
+    state.blocks[data.index].locales.value = data.locales
+  },
   [CONTENT.MOVE_BLOCK] (state, fromTo) {
     if (fromTo.newIndex >= state.blocks.length) {
       let k = fromTo.newIndex - state.blocks.length

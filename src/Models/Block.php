@@ -23,11 +23,13 @@ class Block extends BaseModel
         'child_key',
         'parent_id',
         'publication',
+        'locales',
     ];
 
     protected $casts = [
         'content' => 'array',
         'publication' => 'array',
+        'locales' => 'array',
     ];
 
     protected $with = ['medias'];

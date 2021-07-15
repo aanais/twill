@@ -29,10 +29,15 @@
             <slot name="dropdown-action"/>
           </div>
         </a17-dropdown>
+
+        <a17-button variant="icon" @click="showParamBlock = !showParamBlock" data-tooltip-title="Publication params" v-tooltip><span v-svg symbol="window-text-clock-time"></span></a17-button>
       </div>
     </div>
     <div class="block__content" :aria-hidden="!visible ? true : null">
-      <a17-publish-block  name="publication"  key="`form_date_${block.type}_${block.id}`">publication component</a17-publish-block>
+      <div v-show="showParamBlock">
+        <a17-publish-block  name="publication" key="`form_date_${block.type}_${block.id}`">publication component</a17-publish-block>
+        <a17-lang-block />
+      </div>
       <component v-bind:is="`${block.type}`" :name="componentName(block.id)" v-bind="block.attributes" key="`form_${block.type}_${block.id}`">dynamic components</component>
       <!-- Block validation input frame, to display errors -->
       <a17-inputframe size="small" label="" :name="`block.${block.id}`"/>
@@ -74,7 +79,8 @@
         visible: true,
         hover: false,
         withMoveDropdown: true,
-        withAddDropdown: true
+        withAddDropdown: true,
+        showParamBlock: false
       }
     },
     filters: a17VueFilters,

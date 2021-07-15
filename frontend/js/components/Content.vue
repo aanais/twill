@@ -111,7 +111,8 @@
           type: block.component,
           icon: block.icon,
           attributes: block.attributes,
-          publication: []
+          publication: [],
+          locales: []
         }
 
         this.$store.commit(CONTENT.ADD_BLOCK, {

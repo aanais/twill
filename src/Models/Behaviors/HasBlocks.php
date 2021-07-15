@@ -23,6 +23,14 @@ trait HasBlocks
                     return false;
                 }
             }
+            //Check if block is available for current locale
+            if (!empty($block->locales['value'])) {
+                //Check if the block can be visible
+                if (!in_array(config('app.locale'), $block->locales['value'])) {
+                    return false;
+                }
+            }
+
             if ($renderChilds) {
                 $childBlocks = $this->blocks->where('parent_id', $block->id);
                 $renderedChildViews = $childBlocks->map(function ($childBlock) use ($blockViewMappings, $data) {

@@ -189,6 +189,7 @@ trait HandleBlocks
                     'title' => $blockTypeConfig['title'],
                     'attributes' => $blockTypeConfig['attributes'] ?? [],
                     'publication' => $block->publication ?? [],
+                    'locales' => $block->locales ?? [],
                 ];
 
                 if ($isInRepeater) {
@@ -220,6 +221,16 @@ trait HandleBlocks
                         'value' => $value,
                     ];
                 })->filter()->values()->toArray();
+
+                $fields['blocksFields'][] = Collection::make($block['locales'])->filter(function ($value, $key) {
+                    return $key == "locales";
+                })->map(function ($value, $key) use ($block) {
+                    return [
+                        'name' => "blocks[$block->id][$key]",
+                        'value' => $value,
+                    ];
+                })->filter()->values()->toArray();
+                
 
                 $blockFormFields = app(BlockRepository::class)->getFormFields($block);
 
