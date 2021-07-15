@@ -15,22 +15,22 @@
       <div class="block__actions">
         <slot name="block-actions"/>
         <a17-dropdown :ref="addDropdown" position="bottom-right" @open="hover = true" @close="hover = false" v-if="withAddDropdown">
-          <a17-button variant="icon" data-action @click="$refs[addDropdown].toggle()"><span v-svg symbol="add"></span></a17-button>
+          <a17-button variant="icon" data-action @click="$refs[addDropdown].toggle()"><span v-svg symbol="add" :hideTitle="true"></span></a17-button>
           <div slot="dropdown__content">
             <slot name="dropdown-add"/>
           </div>
         </a17-dropdown>
 
-        <a17-button variant="icon" data-action @click="toggleExpand()" :aria-expanded="visible ? 'true' : 'false'"><span v-svg symbol="expand"></span></a17-button>
+        <a17-button variant="icon" data-action @click="toggleExpand()" :aria-expanded="visible ? 'true' : 'false'"><span v-svg symbol="expand" :hideTitle="true"></span></a17-button>
 
         <a17-dropdown :ref="actionsDropdown" position="bottom-right" @open="hover = true" @close="hover = false">
-          <a17-button variant="icon" @click="$refs[actionsDropdown].toggle()"><span v-svg symbol="more-dots"></span></a17-button>
+          <a17-button variant="icon" @click="$refs[actionsDropdown].toggle()"><span v-svg symbol="more-dots" :hideTitle="true"></span></a17-button>
           <div slot="dropdown__content">
             <slot name="dropdown-action"/>
           </div>
         </a17-dropdown>
 
-        <a17-button variant="icon" @click="showParamBlock = !showParamBlock" data-tooltip-title="Publication params" v-tooltip><span v-svg symbol="window-text-clock-time"></span></a17-button>
+        <a17-button variant="icon" @click="toggleParams()" data-tooltip-title="Publication params" v-tooltip><span v-svg symbol="window-text-clock-time" :hideTitle="true"></span></a17-button>
       </div>
     </div>
     <div class="block__content" :aria-hidden="!visible ? true : null">
@@ -114,6 +114,14 @@
       toggleExpand: function () {
         this.visible = !this.visible
         this.$emit('expand', this.visible)
+      },
+      toggleParams: function () {
+        if (!this.visible) {
+          this.visible = true
+          this.showParamBlock = true
+        } else {
+          this.showParamBlock = !this.showParamBlock
+        }
       },
       componentName: function (id) {
         return 'blocks[' + id + ']'

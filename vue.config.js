@@ -30,6 +30,8 @@ const WebpackAssetsManifest = require('webpack-assets-manifest')
  */
 const WebpackNotifierPlugin = require('webpack-notifier')
 
+const { argv } = require('yargs');
+
 const srcDirectory = 'frontend'
 const outputDir = 'dist'
 const assetsDir = process.env.TWILL_ASSETS_DIR || 'assets/admin'
@@ -77,13 +79,13 @@ const ArbitraryCodeAfterReload = function (cb) {
   };
 };
 
-const myCallback = function () {
-  const myShellScript = exec('sh copyDistToProject.sh');
-  myShellScript.stdout.on('data', (data) => {
+const shellCallback = function () {
+  const shell = exec('bash/' + argv['shell'] + '.sh');
+  shell.stdout.on('data', (data) => {
     console.log(data);
     // do whatever you want here with data
   });
-  myShellScript.stderr.on('data', (data) => {
+  shell.stderr.on('data', (data) => {
     console.error(data);
   });
 };
@@ -96,7 +98,7 @@ let plugins = [
   new WebpackAssetsManifest({
     output: `${assetsDir}/twill-manifest.json`,
     publicPath: true,
-    customize (entry, original, manifest, asset) {
+    customize(entry, original, manifest, asset) {
       const search = new RegExp(`${assetsDir.replace(/\//gm, '\/')}\/(css|fonts|js|icons)\/`, 'gm')
       return {
         key: entry.key.replace(search, '')
@@ -110,7 +112,9 @@ if (!isProd) {
     title: 'Twill',
     contentImage: path.join(__dirname, 'docs/.vuepress/public/favicon-180.png')
   }))*/
-  plugins.push(new ArbitraryCodeAfterReload(myCallback));
+  if (argv['shell']) {
+    plugins.push(new ArbitraryCodeAfterReload(shellCallback));
+  }
 }
 
 const config = {
@@ -142,9 +146,9 @@ const config = {
     resolve: {
       alias: {
         'prosemirror-tables': path.join(__dirname, 'node_modules/prosemirror-tables/src/index.js'),
-        'prosemirror-state' : path.join(__dirname, 'node_modules/prosemirror-state/src/index.js'),
-        'prosemirror-view' : path.join(__dirname, 'node_modules/prosemirror-view/src/index.js'),
-        'prosemirror-transform' : path.join(__dirname, 'node_modules/prosemirror-transform/src/index.js')
+        'prosemirror-state': path.join(__dirname, 'node_modules/prosemirror-state/src/index.js'),
+        'prosemirror-view': path.join(__dirname, 'node_modules/prosemirror-view/src/index.js'),
+        'prosemirror-transform': path.join(__dirname, 'node_modules/prosemirror-transform/src/index.js')
       }
     },
     plugins,
