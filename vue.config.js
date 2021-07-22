@@ -1,4 +1,6 @@
 const path = require('path')
+const { exec } = require('child_process');
+
 const isProd = process.env.NODE_ENV === 'production'
 
 // Define global vue variables
@@ -27,6 +29,8 @@ const WebpackAssetsManifest = require('webpack-assets-manifest')
  * @see: https://github.com/Turbo87/webpack-notifier
  */
 const WebpackNotifierPlugin = require('webpack-notifier')
+
+const { argv } = require('yargs');
 
 const srcDirectory = 'frontend'
 const outputDir = 'dist'
@@ -67,6 +71,25 @@ const svgConfig = (suffix = null) => {
   }
 }
 
+const ArbitraryCodeAfterReload = function (cb) {
+  this.apply = function (compiler) {
+    if (compiler.hooks && compiler.hooks.done) {
+      compiler.hooks.done.tap('webpack-arbitrary-code', cb);
+    }
+  };
+};
+
+const shellCallback = function () {
+  const shell = exec('bash/' + argv['shell'] + '.sh');
+  shell.stdout.on('data', (data) => {
+    console.log(data);
+    // do whatever you want here with data
+  });
+  shell.stderr.on('data', (data) => {
+    console.error(data);
+  });
+};
+
 let plugins = [
   new CleanWebpackPlugin(),
   new SVGSpritemapPlugin(`${srcDirectory}/icons/**/*.svg`, svgConfig()),
@@ -89,6 +112,9 @@ if (!isProd) {
     title: 'Twill',
     contentImage: path.join(__dirname, 'docs/.vuepress/public/favicon-180.png')
   }))*/
+  if (argv['shell']) {
+    plugins.push(new ArbitraryCodeAfterReload(shellCallback));
+  }
 }
 
 const config = {

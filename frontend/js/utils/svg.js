@@ -6,6 +6,8 @@
 export function addSvg (el, binding, vnode) {
   const classNames = ['icon']
   const id = binding.expression || vnode.data.attrs.symbol
+  const displayTitle = !vnode.data.attrs.hideTitle
+
   let svg = el
 
   // span or svg ?
@@ -22,10 +24,12 @@ export function addSvg (el, binding, vnode) {
   })
 
   // add title to SVGs
-  const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+  if (displayTitle) {
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
 
-  title.textContent = id
-  svg.appendChild(title)
+    title.textContent = id
+    svg.appendChild(title)
+  }
 
   // Add the <use> element to <svg>
   const href = `#icon--${id}`

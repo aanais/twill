@@ -47,6 +47,9 @@ export const buildBlock = (block, rootState) => {
       content[field.name] = field.value
       return content
     }, {}),
+    // retrieve all fields for this block and clean up field names
+    publication: block.publication,
+    locales: block.locales,
     medias: gatherSelected(rootState.mediaLibrary.selected, block),
     browsers: gatherSelected(rootState.browser.selected, block),
     // gather repeater blocks from the repeater store module
