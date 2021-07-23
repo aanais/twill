@@ -7,6 +7,7 @@ module.exports = {
     'plugin:vue/essential',
     '@vue/standard'
   ],
+  "ignorePatterns": ["**/libs/**/*.js"],
   'rules': {
     // indent
     'indent': ['error', 2, { 'SwitchCase': 1 }],
