@@ -1,2 +1,2 @@
 cd ../../
-docker exec test_php-fpm_1 php artisan twill:update 
+docker exec `docker container ls | grep fpm | awk '{print $NF}'` php artisan twill:update
