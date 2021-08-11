@@ -10,6 +10,8 @@ import a17SlimSelect from '@/components/SlimSelect.vue'
 import a17Inputframe from '@/components/InputFrame.vue'
 import a17ColorField from '@/components/ColorField.vue'
 import a17Textfield from '@/components/Textfield.vue'
+import a17Currency from '@/components/Currency.vue'
+import a17CurrencyInput from '@/components/CurrencyInput.vue'
 import a17HiddenField from '@/components/HiddenField.vue'
 import a17Wysiwyg from '@/components/Wysiwyg.vue'
 import a17WysiwygTipTap from '@/components/WysiwygTiptap.vue'
@@ -59,6 +61,8 @@ const A17Config = {
     Vue.component('a17-slideshow', a17Slideshow)
     Vue.component('a17-browserfield', a17BrowserField)
     Vue.component('a17-textfield', a17Textfield)
+    Vue.component('a17-currency', a17Currency)
+    Vue.component('a17-currency-input', a17CurrencyInput)
     Vue.component('a17-hiddenfield', a17HiddenField)
     Vue.component('a17-wysiwyg', a17Wysiwyg)
     Vue.component('a17-wysiwyg-tiptap', a17WysiwygTipTap)

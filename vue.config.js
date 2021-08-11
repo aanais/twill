@@ -168,7 +168,10 @@ const config = {
       config.plugins.delete(`preload-${page}`)
       config.plugins.delete(`prefetch-${page}`)
     })
-  }
+  },
+  transpileDependencies: [
+    'vue-currency-input'
+  ]
 }
 
 module.exports = config
