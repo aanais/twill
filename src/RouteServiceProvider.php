@@ -239,12 +239,15 @@ class RouteServiceProvider extends ServiceProvider
             Route::get("/{$prefixSlug}/partial/{id}")
                 ->uses("{$className}Controller@partial")
                 ->name("{$customRoutePrefix}.partial");
-            Route::post("/{$prefixSlug}/partial")
-                ->uses("{$className}Controller@partialInsert")
-                ->name("{$customRoutePrefix}.partial.insert");
-            Route::get("/{$prefixSlug}/partial/{id}/delete")
-                ->uses("{$className}Controller@partialDelete")
-                ->name("{$customRoutePrefix}.partial.delete");
+                Route::post("/{$prefixSlug}/partial")
+                    ->uses("{$className}Controller@partialInsert")
+                    ->name("{$customRoutePrefix}.partial.insert");
+                Route::post("/{$prefixSlug}/sort")
+                    ->uses("{$className}Controller@partialSort")
+                    ->name("{$customRoutePrefix}.partial.sort");
+                Route::get("/{$prefixSlug}/partial/{id}/delete")
+                    ->uses("{$className}Controller@partialDelete")
+                    ->name("{$customRoutePrefix}.partial.delete");
 
             if ($resource) {
                 $customRoutePrefix = !empty($groupPrefix) ? "{$groupPrefix}." : "";

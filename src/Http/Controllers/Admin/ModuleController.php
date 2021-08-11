@@ -1720,6 +1720,19 @@ abstract class ModuleController extends Controller
         $this->repository->delete($id);
     }
 
+    public function partialSort()
+    {
+        $values = request()->input('positions');
+        foreach ($values as $id => $position) {
+            $item = $this->repository->getById($id);
+            if ($item) {
+                // The position field is hardcoded in Twill
+                $item->position = $position;
+                $item->save();
+            }
+        }
+    }
+
     public function partialInsert()
     {
         $item = $this->repository->newModel(request()->input());

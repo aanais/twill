@@ -1,7 +1,11 @@
-@php $fieldName = Str::slug($label) @endphp
+@php
+$fieldName = Str::slug($label);
+$sortable = !empty($sortable);
+@endphp
  <div class="inserter"
     id="inserter{{$fieldName}}"
     data-insert-url="{{ route($module.'.partial.insert') }}"
+    data-sort-url="{{ route($module.'.partial.sort') }}"
     data-container="container{{ $fieldName }}"
     data-csrf="{{ csrf_token() }}"
     >
@@ -11,8 +15,8 @@
 </div>
 
 <div class="has-many-container" id="container{{ $fieldName }}">
-    <div class="fieldset-many" style="width: 100%">
-        @foreach ($item->$relation()->orderBy($order ?? 'begin_at')->get() as $related)
+    <div class="fieldset-many @if ($sortable) sortable @endif" style="width: 100%">
+        @foreach ($item->$relation()->orderBy($order ?? ($sortable ? 'position' : 'begin_at'))->get() as $related)
             <div class="item" data-id="{{ $related->id }}"
                 data-delete-url="{{ route($module.'.partial.delete', ['id' => $related->id]) }}"
             >
@@ -26,8 +30,12 @@
     </div>
 </div>
 
+
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+
 
         document.querySelectorAll('#inserter{{$fieldName}}').forEach(function (inserter) {
             inserter.querySelector('button').addEventListener('click', function() {
@@ -80,7 +88,40 @@
         });
 
         tick{{ $fieldName }}();
+
+        @if ($sortable)
+            const form = document.querySelector('#container{{ $fieldName }} .fieldset-many');
+            form.classList.add('bite');
+            new Sortable(form, {
+                animation: 150,
+                onEnd: function() {
+                    sort{{ $fieldName }}();
+                }
+            });
+        @endif
     });
+
+    function sort{{ $fieldName }}() {
+        const inserter = document.querySelector('#inserter{{$fieldName}}');
+        const container = document.querySelector('#container{{$fieldName}}');
+        const url = inserter.dataset.sortUrl;
+        let data = {};
+        let count = 0;
+        container.querySelectorAll('.item').forEach((item) => {
+            data[item.dataset.id] = count++;
+        });
+
+        var xhr = new XMLHttpRequest();
+
+        fetch(url, {
+            method : "POST",
+            headers: {
+                'X-CSRF-TOKEN': inserter.dataset.csrf,
+                'Content-Type': 'application/json'
+            },
+            body : JSON.stringify({positions: data})
+        });
+    }
 
     function deleteItem{{ $fieldName }}(id) {
         if (window.confirm("Are you sure you want to delete this item ?")) {
@@ -108,6 +149,11 @@
     }
 </script>
 
+@if ($sortable)
+    @prepend('extra_js')
+        <script src="{{ asset('js/Sortable.min.js') }}"></script>
+    @endprepend
+@endif
 
 @push('extra_css')
 
@@ -115,6 +161,26 @@
     .fieldset-many .item {
         position: relative;
         width: 100%;
+    }
+
+
+    .fieldset-many.sortable .item {
+        padding-left: 20px;
+    }
+
+    .fieldset-many.sortable .item:before{
+        content: "";
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAA51JREFUeJzt3bFqHFcUBuA/suXeYWXkwtIDOEYpTFo160J+MgccHIR7oUeKIa4lV5JlHKeTkJBSXBYHeUGzq+HeYef74JR7+Vk4c2fuznISAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKA3P7UOQJJkPclOkq0kN0mOk3xIctUyFLS2mWQ/ybeUxvh/fU3yLslGs3TQ0F5KE9xujNt1lmTaKCM0sZfkMnc3x6wuokkYic102znm7SSTBnmhqv0s3hyzetsgL1SznvkP5IvsImvVU0MlL7N8c8zqRfXUI+ZqVNdWD2ts97AGHWmQum5aB2AxGqSu4x7WOOphDRikh1nuiHdWp3FRq8qXXddVksN7fP4gyXVPWWCQNlKOaxfdPU6SPG6QF6qbprw+0rU5zpPsNkkKjUzTbSc5ieZgpCYpr4/Ma5TTJG/itqopf5gahrUkz/P9R8CjJB/jgRwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABYYQboDMN6kp0kWynTpY6TfEiZigujtZlkP8m3/DiC7WuSdylTcWF09lKa4K4hnmcpAz9hNPaSXKb7GOiLaBJGYjPddo55O8mkQV6oaj+LN8es3jbIC9WsZ/4D+SK7yFr11FDJyyzfHLN6UT31iLka1bXVwxrbPaxBRxqkrpvWAViMBqnruIc1jnpYAwbpYZY74p3VaVzUqvJl13WV5PAenz9Ict1TFhikjZTj2kV3j5MkjxvkheqmKa+PdG2O8yS7TZJCI9N020lOojkYqUnK6yPzGuU0yZu4rWrKH6aGYS3J83z/EfAoycd4IAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABWmAE6w/Aoya9JnqVMl/qU5K8kly1DQWtPk7xP8m9+HMH2T5I/kzxplg4aep3SBHcN8fyS5FWjjNDE65Tbp65joC9SpuLCynuabjvH7TpLmYoLK+19Fm+OWf3RIC9U8yjzH8i71pckD6qnhkp+y/LNMaud6qlHbK11gJF51sMa2z2sQUcapK6bgaxBRxqkrk89rHHUwxowSOtZ7oh3Vp/jolaVL7uuyySH9/j8QZLrnrLAID1JOa5ddPc4SfJzg7xQ3auU10e6Nsd5kt0mSaGRacrrI112Ds3BKE1SXh+Zd8v1OcnvcVvVlD9MDcODJL+k/Ah4k3KU+3c8kAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAq+Q/vrbt7vvWVnEAAAAASUVORK5CYII=);
+        opacity: 1;
+        width: 40px;
+        height: 43px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        transform: translateY(-50%);
+        cursor: move;
     }
 
     .fieldset-many .delete {
