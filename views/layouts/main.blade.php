@@ -47,9 +47,10 @@
             @hasSection('primaryNavigation')
                 @yield('primaryNavigation')
             @else
-                @partialView(($moduleName ?? null), 'navigation._primary_navigation')
-                @partialView(($moduleName ?? null), 'navigation._secondary_navigation')
-                @partialView(($moduleName ?? null), 'navigation._breadcrumb')
+                @php $namespace = substr($viewPrefix, 0, strrpos($viewPrefix, ':') + 1) . 'admin.partials' @endphp
+                @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._primary_navigation')
+                @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._secondary_navigation')
+                @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._breadcrumb')
             @endif
             <section class="main">
                 <div class="app" id="app" v-cloak>

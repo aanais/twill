@@ -407,6 +407,7 @@ class TwillServiceProvider extends ServiceProvider
                 $expression = '([])';
             }
 
+
             return "<?php
             if( view()->exists($viewForced)) {
                 echo \$__env->make($viewForced, \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->with{$expression}->render();
@@ -458,7 +459,7 @@ class TwillServiceProvider extends ServiceProvider
             View::composer('twill::layouts.main', FilesUploaderConfig::class);
         }
 
-        View::composer('twill::partials.navigation.*', ActiveNavigation::class);
+        View::composer('*partials.navigation.*', ActiveNavigation::class);
 
         View::composer(['admin.*', 'templates.*', 'twill::*'], function ($view) {
             $with = array_merge([
