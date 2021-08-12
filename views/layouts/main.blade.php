@@ -47,7 +47,7 @@
             @hasSection('primaryNavigation')
                 @yield('primaryNavigation')
             @else
-                @php $namespace = substr($viewPrefix, 0, strrpos($viewPrefix, ':') + 1) . 'admin.partials' @endphp
+                @php $namespace = empty($viewPrefix) ? '' : (substr($viewPrefix, 0, strrpos($viewPrefix, ':') + 1) . 'admin.partials') @endphp
                 @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._primary_navigation')
                 @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._secondary_navigation')
                 @partialViewWithPrefix(($moduleName ?? null), ($namespace), 'navigation._breadcrumb')
