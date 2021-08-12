@@ -11,17 +11,17 @@ $height__nav: 60px;
 
 .navUnder {
   background-color:$color__border;
-  overflow:hidden;
-  height:$height__nav;
+  //overflow:hidden;
+  //height:$height__nav;
 }
 
 .navUnder__list {
   margin-left: -17px;
   flex-grow: 1;
-  white-space: nowrap;
-  height:60px + 50px;
-  overflow:hidden;
-  overflow-x:auto;
+  //white-space: nowrap;
+  //height:60px + 50px;
+  //overflow:hidden;
+  //overflow-x:auto;
 }
 
 .navUnder__item {

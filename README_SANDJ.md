@@ -8,6 +8,10 @@ Twill is also really hard (or even impossible) to extend without changing this p
 
 Don't post issues or pull request on this repository they will be ignored. You can post them on : https://github.com/area17/twill
 
+# To build in dev
+
+`npm run watch -- --shell=copyDistToProject` you need to have SMITH and JOSETTE docker running. Otherwise you can build twill normally.
+
 # Changes made by SMITH and JOSETTE
 
 ## CRUD
