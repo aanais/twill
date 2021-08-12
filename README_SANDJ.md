@@ -117,6 +117,10 @@ The list of all the common fields for your Employee.
   }
 ```
 
+* Allow navigation to be overloaded from external packages
+
+Just add the `partials/navigation/_secondary_navigation.blade.php` in the `admin` folder of your package.
+
 ### Media Library
 
 * Allow the user to replace file uploads
