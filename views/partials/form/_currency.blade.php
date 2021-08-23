@@ -65,7 +65,7 @@
             :has-default-store="true"
         @endif
         in-store="value"
-    ></a17-textfield>
+    ></a17-currency>
 @endif
 
 @unless($renderForBlocks || $renderForModal)
