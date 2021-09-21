@@ -4,7 +4,7 @@ namespace A17\Twill\Models\Behaviors;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Schema;
 
 trait HasSlug
 {
@@ -79,9 +79,9 @@ trait HasSlug
     public function updateOrNewSlug($slugParams, $restoring = false)
     {
         if (in_array($slugParams['locale'], config('twill.slug_utf8_languages', []))) {
-            $slugParams['slug'] = $this->getUtf8Slug($slugParams['slug']);
+            $slugParams['slug'] = Str::limit($this->getUtf8Slug($slugParams['slug']), Schema::$defaultStringLength, '');
         } else {
-            $slugParams['slug'] = Str::slug($slugParams['slug']);
+            $slugParams['slug'] = Str::limit(Str::slug($slugParams['slug']), Schema::$defaultStringLength, '');
         }
 
         //active old slug if already existing or create a new one
