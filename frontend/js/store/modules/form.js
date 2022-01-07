@@ -66,15 +66,19 @@ const state = {
   errors: {},
   /**
    * Is this a custom form (that will let the browser submit the form instead of hooking up the submit event)
-   * @type {Bookean}
+   * @type {Boolean}
    */
   isCustom: window[process.env.VUE_APP_NAME].STORE.form.isCustom || false,
   /**
    * Force reload on successful submit
-   * @type {Bookean}
+   * @type {Boolean}
    */
-  reloadOnSuccess: window[process.env.VUE_APP_NAME].STORE.form.reloadOnSuccess || false
-
+  reloadOnSuccess: window[process.env.VUE_APP_NAME].STORE.form.reloadOnSuccess || false,
+  /**
+   * Determines if the form should prevent submitting before an input value is pushed into the store
+   * @type {Boolean}
+   */
+  isSubmitPrevented: false
 }
 
 // getters
@@ -94,7 +98,8 @@ const getters = {
   },
   modalFieldValueByName: (state, getters) => name => { // want to use getters
     return getters.modalFieldsByName(name).length ? getters.modalFieldsByName(name)[0].value : ''
-  }
+  },
+  fieldsByBlockId: (state) => (id) => state.fields.filter((field) => field.name.startsWith(`blocks[${id}]`))
 }
 
 const mutations = {
@@ -103,9 +108,18 @@ const mutations = {
       state.permalink = newValue
     }
   },
+  [FORM.PREVENT_SUBMIT] (state) {
+    state.isSubmitPrevented = true
+  },
+  [FORM.ALLOW_SUBMIT] (state) {
+    state.isSubmitPrevented = false
+  },
   // ----------- Form fields ----------- //
   [FORM.EMPTY_FORM_FIELDS] (state, status) {
     state.fields = []
+  },
+  [FORM.ADD_FORM_FIELDS] (state, fields) {
+    state.fields = [...state.fields, ...fields]
   },
   [FORM.REPLACE_FORM_FIELDS] (state, fields) {
     state.fields = fields
@@ -113,10 +127,9 @@ const mutations = {
   [FORM.UPDATE_FORM_FIELD] (state, field) {
     let fieldValue = field.locale ? {} : null
     const fieldIndex = getFieldIndex(state.fields, field)
-
     // Update existing form field
     if (fieldIndex !== -1) {
-      if (field.locale) fieldValue = state.fields[fieldIndex].value
+      if (field.locale) fieldValue = state.fields[fieldIndex].value || {}
       // remove existing field
       state.fields.splice(fieldIndex, 1)
     }
@@ -133,6 +146,17 @@ const mutations = {
     state.fields.forEach(function (field, index) {
       if (field.name === fieldName) state.fields.splice(index, 1)
     })
+  },
+  [FORM.DUPLICATE_BLOCK_FORM_FIELDS] (state, { fields, oldId, newId }) {
+    const newFields = []
+
+    fields.forEach(field => {
+      newFields.push({
+        name: field.name.replace(oldId, newId),
+        value: field.value
+      })
+    })
+    state.fields = [...state.fields, ...newFields]
   },
   // ----------- Modal fields ----------- //
   [FORM.EMPTY_MODAL_FIELDS] (state, status) {
@@ -279,7 +303,9 @@ const actions = {
     // - created blocks and repeaters
     const data = getFormData(rootState)
 
-    api.put(state.saveUrl, data, function (successResponse) {
+    const method = rootState.publication.createWithoutModal ? 'post' : 'put'
+
+    api[method](state.saveUrl, data, function (successResponse) {
       commit(FORM.UPDATE_FORM_LOADING, false)
 
       if (successResponse.data.hasOwnProperty('redirect')) {
@@ -297,9 +323,18 @@ const actions = {
       }
     }, function (errorResponse) {
       commit(FORM.UPDATE_FORM_LOADING, false)
-      commit(FORM.SET_FORM_ERRORS, errorResponse.response.data)
-      commit(NOTIFICATION.SET_NOTIF, { message: 'Your submission could not be validated, please fix and retry', variant: 'error' })
+
+      if (errorResponse.response.data.hasOwnProperty('exception')) {
+        commit(NOTIFICATION.SET_NOTIF, { message: 'Your submission could not be processed.', variant: 'error' })
+      } else {
+        commit(FORM.SET_FORM_ERRORS, errorResponse.response.data)
+        commit(NOTIFICATION.SET_NOTIF, { message: 'Your submission could not be validated, please fix and retry', variant: 'error' })
+      }
     })
+  },
+  async [ACTIONS.DUPLICATE_BLOCK] ({ commit, getters }, { block, id }) {
+    const fields = getters.fieldsByBlockId(block.id)
+    commit(FORM.DUPLICATE_BLOCK_FORM_FIELDS, { fields, oldId: block.id, newId: id })
   }
 }
 

@@ -19,6 +19,7 @@ abstract class ModulesTestBase extends TestCase
     public $bio_fr;
     public $birthday;
     public $block_id;
+    public $block_editor_name;
     public $block_quote;
     public $translation;
     public $author;
@@ -100,7 +101,7 @@ abstract class ModulesTestBase extends TestCase
 
         $this->copyFiles($this->allFiles);
 
-        $this->loadConfig();
+        $this->loadModulesConfig();
 
         $this->migrate();
 
@@ -110,28 +111,6 @@ abstract class ModulesTestBase extends TestCase
     protected function assertSomethingWrongHappened()
     {
         $this->assertSee('Something wrong happened!');
-    }
-
-    protected function assertNothingWrongHappened()
-    {
-        $this->assertDontSee('Something wrong happened!');
-    }
-
-    protected function loadConfig($file = null)
-    {
-        $config = require $this->makeFileName(
-            $file ?? '{$stubs}/modules/authors/twill.php'
-        );
-
-        config(['twill' => $config + config('twill')]);
-    }
-
-    /**
-     * Migrate database.
-     */
-    public function migrate()
-    {
-        $this->artisan('migrate');
     }
 
     protected function fakeText(int $max = 250)
@@ -176,17 +155,24 @@ abstract class ModulesTestBase extends TestCase
 
     protected function addBlock()
     {
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}",
             'PUT',
             $this->getUpdateAuthorWithBlock()
-        )->assertStatus(200);
+        );
 
-        $this->assertEquals(1, $this->author->blocks->count());
+        $this->assertEquals(2, $this->author->blocks->count());
 
+        // Check default block content
         $this->assertEquals(
             $block_quote = ['quote' => $this->block_quote],
             $this->author->blocks->first()->content
+        );
+
+        // Check named block content
+        $this->assertEquals(
+            $block_quote = ['quote' => $this->block_quote],
+            $this->author->blocks()->editor($this->block_editor_name)->get()->first()->content
         );
 
         // Check if blocks are rendering
@@ -195,8 +181,14 @@ abstract class ModulesTestBase extends TestCase
             clean_file(trim($this->author->renderBlocks()))
         );
 
+        // Check if named blocks are rendering
+        $this->assertEquals(
+            clean_file(json_encode($block_quote)),
+            clean_file(trim($this->author->renderNamedBlocks($this->block_editor_name)))
+        );
+
         // Get browser data
-        $this->request('/twill/personnel/authors/browser')->assertStatus(200);
+        $this->httpRequestAssert('/twill/personnel/authors/browser');
 
         $this->assertJson($this->content());
 
@@ -213,11 +205,11 @@ abstract class ModulesTestBase extends TestCase
     protected function createAuthor($count = 1)
     {
         foreach (range(1, $count) as $c) {
-            $this->request(
+            $this->httpRequestAssert(
                 '/twill/personnel/authors',
                 'POST',
                 $this->getCreateAuthorData()
-            )->assertStatus(200);
+            );
         }
 
         $this->translation = AuthorTranslation::where('name', $this->name_en)
@@ -237,11 +229,11 @@ abstract class ModulesTestBase extends TestCase
 
         $this->assertNull($this->author->deleted_at);
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}",
             'DELETE',
             $this->getUpdateAuthorWithBlock()
-        )->assertStatus(200);
+        );
 
         $this->assertNothingWrongHappened();
 
@@ -249,20 +241,21 @@ abstract class ModulesTestBase extends TestCase
 
         $this->assertNotNull($this->author->deleted_at);
 
-        $this->request(
+        $this->httpRequestAssert(
             '/twill/personnel/authors/9999999',
             'DELETE',
-            $this->getUpdateAuthorWithBlock()
-        )->assertStatus(404);
+            $this->getUpdateAuthorWithBlock(),
+            404
+        );
     }
 
     protected function editAuthor()
     {
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}",
             'PUT',
             $this->getUpdateAuthorData()
-        )->assertStatus(200);
+        );
 
         $this->assertNothingWrongHappened();
 
@@ -388,21 +381,30 @@ abstract class ModulesTestBase extends TestCase
     {
         return $this->getUpdateAuthorData() + [
             'blocks' => [
-                [
-                    'id' => ($this->block_id = rand(
-                        1570000000000,
-                        1579999999999
-                    )),
-                    'type' => 'a17-block-quote',
-                    'content' => [
-                        'quote' => ($this->block_quote = $this->fakeText()),
-                    ],
-                    'medias' => [],
-                    'browsers' => [],
-                    'blocks' => [],
-                ],
+                $this->getAuthorBlock(),
+                $this->getAuthorBlock($this->block_editor_name = 'unique-name')
             ],
             'repeaters' => [],
+        ];
+    }
+
+    public function getAuthorBlock($name = 'default')
+    {
+        $this->block_quote = $this->block_quote ?? $this->fakeText();
+
+        return [
+            'id' => ($this->block_id = rand(
+                1570000000000,
+                1579999999999
+            )),
+            'type' => 'a17-block-quote',
+            'content' => [
+                'quote' => $this->block_quote,
+            ],
+            'medias' => [],
+            'browsers' => [],
+            'blocks' => [],
+            'editor_name' => $name,
         ];
     }
 
@@ -452,11 +454,11 @@ abstract class ModulesTestBase extends TestCase
     protected function createCategory($count = 1)
     {
         foreach (range(1, $count) as $c) {
-            $this->request(
+            $this->httpRequestAssert(
                 '/twill/categories',
                 'POST',
                 $this->getCreateCategoryData()
-            )->assertStatus(200);
+            );
         }
 
         $this->translation = CategoryTranslation::where(

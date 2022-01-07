@@ -1,6 +1,5 @@
 @php
     $note = $note ?? false;
-    $inline = $inline ?? false;
     $default = $default ?? false;
     $inModal = $fieldsInModal ?? false;
     $disabled = $disabled ?? false;
@@ -9,6 +8,10 @@
     $onChangeAttribute = $onChangeAttribute ?? false;
     $onChangeFullAttribute = $onChangeAttribute ? "('".$onChangeAttribute."', ...arguments)" : "";
 
+    $border = $border ?? false;
+    $confirmMessageText = $confirmMessageText ?? '';
+    $confirmTitleText = $confirmTitleText ?? '';
+    $requireConfirmation = $requireConfirmation ?? false;
 @endphp
 
 <a17-singlecheckbox
@@ -18,6 +21,10 @@
     @if ($note) note='{{ $note }}' @endif
     @if ($disabled) disabled @endif
     @if ($ref) ref="{{ $ref }}" @endif
+    @if ($border) :border="true" @endif
+    @if ($requireConfirmation) :require-confirmation="true" @endif
+    @if ($confirmMessageText) confirm-message-text="{{ $confirmMessageText }}"  @endif
+    @if ($confirmTitleText) confirm-title-text="{{ $confirmTitleText }}"  @endif
     :has-default-store="true"
     in-store="currentValue"
     @if ($onChange) v-on:change="{!! $onChange !!}{{ $onChangeFullAttribute }}" @endif

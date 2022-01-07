@@ -2,13 +2,23 @@
 
 namespace A17\Twill;
 
+use Exception;
+use A17\Twill\Commands\BlockMake;
 use A17\Twill\Commands\Build;
+use A17\Twill\Commands\CapsuleInstall;
 use A17\Twill\Commands\CreateSuperAdmin;
 use A17\Twill\Commands\Dev;
 use A17\Twill\Commands\GenerateBlocks;
 use A17\Twill\Commands\Install;
+use A17\Twill\Commands\ListBlocks;
+use A17\Twill\Commands\ListIcons;
+use A17\Twill\Commands\MakeCapsule;
+use A17\Twill\Commands\MakeSingleton;
 use A17\Twill\Commands\ModuleMake;
+use A17\Twill\Commands\ModuleMakeDeprecated;
 use A17\Twill\Commands\RefreshLQIP;
+use A17\Twill\Commands\RefreshCrops;
+use A17\Twill\Commands\SyncLang;
 use A17\Twill\Commands\Update;
 use A17\Twill\Http\ViewComposers\ActiveNavigation;
 use A17\Twill\Http\ViewComposers\CurrentUser;
@@ -19,6 +29,7 @@ use A17\Twill\Models\Block;
 use A17\Twill\Models\File;
 use A17\Twill\Models\Media;
 use A17\Twill\Models\User;
+use A17\Twill\Services\Capsules\HasCapsules;
 use A17\Twill\Services\FileLibrary\FileService;
 use A17\Twill\Services\MediaLibrary\ImageService;
 use Astrotomic\Translatable\TranslatableServiceProvider;
@@ -29,16 +40,18 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\ActivitylogServiceProvider;
+use PragmaRX\Google2FAQRCode\Google2FA as Google2FAQRCode;
 
 class TwillServiceProvider extends ServiceProvider
 {
+    use HasCapsules;
 
     /**
      * The Twill version.
      *
      * @var string
      */
-    const VERSION = '2.0.1';
+    const VERSION = '2.6.0';
 
     /**
      * Service providers to be registered.
@@ -52,6 +65,7 @@ class TwillServiceProvider extends ServiceProvider
         TranslatableServiceProvider::class,
         TagsServiceProvider::class,
         ActivitylogServiceProvider::class,
+        CapsulesServiceProvider::class,
     ];
 
     private $migrationsCounter = 0;
@@ -76,6 +90,8 @@ class TwillServiceProvider extends ServiceProvider
 
         $this->extendBlade();
         $this->addViewComposers();
+
+        $this->check2FA();
     }
 
     /**
@@ -174,11 +190,14 @@ class TwillServiceProvider extends ServiceProvider
                 'provider' => 'twill_users',
             ]]);
 
-            config(['auth.passwords.twill_users' => [
-                'provider' => 'twill_users',
-                'table' => config('twill.password_resets_table', 'twill_password_resets'),
-                'expire' => 60,
-            ]]);
+            if (blank(config('auth.passwords.twill_users'))) {
+                config(['auth.passwords.twill_users' => [
+                    'provider' => 'twill_users',
+                    'table' => config('twill.password_resets_table', 'twill_password_resets'),
+                    'expire' => 60,
+                    'throttle' => 60,
+                ]]);
+            }
         }
 
         config(['activitylog.enabled' => config('twill.enabled.dashboard') ? true : config('twill.enabled.activitylog')]);
@@ -208,6 +227,7 @@ class TwillServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/media-library.php', 'twill.media_library');
         $this->mergeConfigFrom(__DIR__ . '/../config/imgix.php', 'twill.imgix');
         $this->mergeConfigFrom(__DIR__ . '/../config/glide.php', 'twill.glide');
+        $this->mergeConfigFrom(__DIR__ . '/../config/twicpics.php', 'twill.twicpics');
         $this->mergeConfigFrom(__DIR__ . '/../config/dashboard.php', 'twill.dashboard');
         $this->mergeConfigFrom(__DIR__ . '/../config/oauth.php', 'twill.oauth');
         $this->mergeConfigFrom(__DIR__ . '/../config/disks.php', 'filesystems.disks');
@@ -290,12 +310,21 @@ class TwillServiceProvider extends ServiceProvider
         $this->commands([
             Install::class,
             ModuleMake::class,
+            MakeCapsule::class,
+            MakeSingleton::class,
+            ModuleMakeDeprecated::class,
+            BlockMake::class,
+            ListIcons::class,
+            ListBlocks::class,
             CreateSuperAdmin::class,
             RefreshLQIP::class,
+            RefreshCrops::class,
             GenerateBlocks::class,
             Build::class,
             Update::class,
             Dev::class,
+            SyncLang::class,
+            CapsuleInstall::class,
         ]);
     }
 
@@ -306,7 +335,7 @@ class TwillServiceProvider extends ServiceProvider
      */
     private function includeView($view, $expression)
     {
-        list($name) = str_getcsv($expression, ',', '\'');
+        [$name] = str_getcsv($expression, ',', '\'');
 
         $partialNamespace = view()->exists('admin.' . $view . $name) ? 'admin.' : 'twill::';
 
@@ -387,10 +416,10 @@ class TwillServiceProvider extends ServiceProvider
 
             $expressionAsArray = str_getcsv($expression, ',', '\'');
 
-            list($moduleName, $viewName) = $expressionAsArray;
+            [$moduleName, $viewName] = $expressionAsArray;
             $partialNamespace = 'twill::partials';
 
-            $viewModule = "'admin.'.$moduleName.'.{$viewName}'";
+            $viewModule = "twillViewName($moduleName, '{$viewName}')";
             $viewApplication = "'admin.partials.{$viewName}'";
             $viewModuleTwill = "'twill::'.$moduleName.'.{$viewName}'";
             $viewForced = "'{$viewName}'";
@@ -424,7 +453,7 @@ class TwillServiceProvider extends ServiceProvider
         });
 
         $blade->directive('pushonce', function ($expression) {
-            list($pushName, $pushSub) = explode(':', trim(substr($expression, 1, -1)));
+            [$pushName, $pushSub] = explode(':', trim(substr($expression, 1, -1)));
             $key = '__pushonce_' . $pushName . '_' . str_replace('-', '_', $pushSub);
             return "<?php if(! isset(\$__env->{$key})): \$__env->{$key} = 1; \$__env->startPush('{$pushName}'); ?>";
         });
@@ -438,6 +467,15 @@ class TwillServiceProvider extends ServiceProvider
         $blade->component('twill::partials.form.utils._collapsed_fields', 'formCollapsedFields');
         $blade->component('twill::partials.form.utils._connected_fields', 'formConnectedFields');
         $blade->component('twill::partials.form.utils._inline_checkboxes', 'formInlineCheckboxes');
+
+        if (method_exists($blade, 'aliasComponent')) {
+            $blade->aliasComponent('twill::partials.form.utils._fieldset', 'formFieldset');
+            $blade->aliasComponent('twill::partials.form.utils._columns', 'formColumns');
+            $blade->aliasComponent('twill::partials.form.utils._collapsed_fields', 'formCollapsedFields');
+            $blade->aliasComponent('twill::partials.form.utils._connected_fields', 'formConnectedFields');
+            $blade->aliasComponent('twill::partials.form.utils._inline_checkboxes', 'formInlineCheckboxes');
+        }
+
     }
 
     /**
@@ -494,5 +532,23 @@ class TwillServiceProvider extends ServiceProvider
     public function version()
     {
         return static::VERSION;
+    }
+
+    /**
+     * In case 2FA is enabled, we need to check if a QRCode compatible package is
+     * installed.
+     */
+    public function check2FA()
+    {
+        if (!$this->app->runningInConsole() || !config('twill.enabled.users-2fa')) {
+            return;
+        }
+
+        if (blank((new Google2FAQRCode())->getQrCodeService()))
+        {
+            throw new Exception(
+                "Twill ERROR: As you have 2FA enabled, you also need to install a QRCode service package, please check https://github.com/antonioribeiro/google2fa-qrcode#built-in-qrcode-rendering-services"
+            );
+        }
     }
 }

@@ -7,9 +7,10 @@
         </a>
         <span v-else>{{ customTitle ? customTitle : title }}</span>
       </h2>
-      <a v-if="permalink || customPermalink" :href="fullUrl" target="_blank" class="titleEditor__permalink f--small">
+      <a v-if="(permalink || customPermalink) && !showModal" :href="fullUrl" target="_blank" class="titleEditor__permalink f--small">
         <span class="f--note f--external f--underlined--o">{{ visibleUrl | prettierUrl }}</span>
       </a>
+      <span v-if="showModal" class="titleEditor__permalink f--small f--note f--external f--underlined--o">{{ visibleUrl | prettierUrl }}</span>
 
       <!-- Editing modal -->
       <a17-modal class="modal--form" ref="editModal" :title="modalTitle" :forceLock="disabled">
@@ -43,11 +44,17 @@
     props: {
       modalTitle: {
         type: String,
-        default: 'Update item'
+        default: function () {
+          return this.$trans('modal.update.title')
+        }
       },
       warningMessage: {
         type: String,
         default: 'Missing title'
+      },
+      showModal: {
+        type: Boolean,
+        default: false
       },
       name: {
         default: 'title'
@@ -63,12 +70,23 @@
       customPermalink: {
         type: String,
         default: ''
+      },
+      localizedPermalinkbase: {
+        type: String,
+        default: ''
+      },
+      localizedCustomPermalink: {
+        type: String,
+        default: ''
       }
     },
     data: function () {
       return {
         disabled: false
       }
+    },
+    mounted: function () {
+      this.showModal && this.$refs.editModal.open()
     },
     computed: {
       titleEditorClasses: function () {
@@ -77,15 +95,16 @@
         }
       },
       mode: function () {
+        if (this.showModal) return 'done'
         return this.title.length > 0 ? 'update' : 'create'
       },
       fullUrl: function () {
-        return this.customPermalink || this.baseUrl
+        return this.customlink || this.baseUrl
           .replace('{language}', this.currentLocale.value)
           .replace('{preview}/', this.published ? '' : 'admin-preview/') + this.permalink
       },
       visibleUrl: function () {
-        return this.customPermalink || this.baseUrl
+        return this.customlink || this.baseUrl
           .replace('{language}', this.currentLocale.value)
           .replace('{preview}/', '') + this.permalink
       },
@@ -95,8 +114,13 @@
         const titleValue = typeof title === 'string' ? title : title[this.currentLocale.value]
         return titleValue || this.warningMessage
       },
+      customlink: function () {
+        const localizedCustomPermalink = this.localizedCustomPermalink.length > 0 ? JSON.parse(this.localizedCustomPermalink) : {}
+        return Object.keys(localizedCustomPermalink).length > 0 ? localizedCustomPermalink[this.currentLocale.value] : (this.customPermalink ? this.customPermalink : false)
+      },
       permalink: function () {
-        return this.fieldValueByName('slug')[this.currentLocale.value]
+        const localizedPermalinkbase = this.localizedPermalinkbase.length > 0 ? JSON.parse(this.localizedPermalinkbase) : {}
+        return Object.keys(localizedPermalinkbase).length > 0 ? ((this.currentLocale.value in localizedPermalinkbase) ? localizedPermalinkbase[this.currentLocale.value].concat('/', this.fieldValueByName('slug')[this.currentLocale.value]) : this.fieldValueByName('slug')[this.currentLocale.value]) : this.fieldValueByName('slug')[this.currentLocale.value]
       },
       ...mapState({
         baseUrl: state => state.form.baseUrl,

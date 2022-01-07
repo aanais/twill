@@ -3,8 +3,9 @@
 namespace A17\Twill\Tests\Integration;
 
 use App\Models\Author;
-use Illuminate\Support\Facades\Schema;
+use App\Models\Category;
 use App\Models\Revisions\AuthorRevision;
+use Illuminate\Support\Facades\Schema;
 
 class ModulesAuthorsTest extends ModulesTestBase
 {
@@ -48,28 +49,46 @@ class ModulesAuthorsTest extends ModulesTestBase
     {
         $this->createAuthor();
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}"
-        )->assertStatus(200);
+        );
 
         $this->assertSee($this->description_en);
     }
 
     public function testCanDisplayDashboard()
     {
-        $this->request('/twill')->assertStatus(200);
+        $this->httpRequestAssert('/twill');
 
         $this->assertSee('Personnel');
         $this->assertSee('Categories');
 
-        $this->request('/twill/personnel/authors')->assertStatus(200);
+        $this->httpRequestAssert('/twill/personnel/authors');
 
         $this->assertSee('Name');
         $this->assertSee('Languages');
         $this->assertSee('Mine');
         $this->assertSee('Add new');
 
-        $this->request('/twill/categories')->assertStatus(200);
+        $this->httpRequestAssert('/twill/categories');
+    }
+
+    public function testCanSearchString()
+    {
+        $this->createAuthor(3);
+
+        $this->ajax("/twill/search?search={$this->name_en}")->assertStatus(200);
+
+        $this->assertJson($this->content());
+
+        $result = json_decode($this->content(), true);
+
+        $this->assertGreaterThan(0, count($result));
+
+        $this->assertEquals(
+            $this->now->format('Y-m-d\TH:i:s+00:00'),
+            $result[0]['date']
+        );
     }
 
     public function testCanStartRestoringRevision()
@@ -85,11 +104,11 @@ class ModulesAuthorsTest extends ModulesTestBase
         $first = AuthorRevision::first();
         $last = AuthorRevision::all()->last();
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/restoreRevision/{$first->id}",
             'GET',
             ['revisionId' => $last->id]
-        )->assertStatus(200);
+        );
 
         $this->assertSee(
             'You are currently editing an older revision of this content'
@@ -103,10 +122,10 @@ class ModulesAuthorsTest extends ModulesTestBase
         // Publishing
         $this->assertEquals('0', $this->author->published);
 
-        $this->request('/twill/personnel/authors/publish', 'PUT', [
+        $this->httpRequestAssert('/twill/personnel/authors/publish', 'PUT', [
             'id' => $this->author->id,
             'active' => false,
-        ])->assertStatus(200);
+        ]);
 
         $this->assertNothingWrongHappened();
 
@@ -117,18 +136,19 @@ class ModulesAuthorsTest extends ModulesTestBase
 
     public function testCanDisplayErrorWhenPublishHasWrongData()
     {
-        $this->request('/twill/personnel/authors/publish', 'PUT')->assertStatus(
-            200
-        );
+        $this->httpRequestAssert('/twill/personnel/authors/publish', 'PUT');
 
         $this->assertSomethingWrongHappened();
     }
 
     public function testCanRaiseHttpNotFoundOnAnEmptyRestoreRevision()
     {
-        $this->request(
-            '/twill/personnel/authors/restoreRevision/1'
-        )->assertStatus(404);
+        $this->httpRequestAssert(
+            '/twill/personnel/authors/restoreRevision/1',
+            'GET',
+            [],
+            404
+        );
     }
 
     public function testCanPreviewBlock()
@@ -145,9 +165,7 @@ class ModulesAuthorsTest extends ModulesTestBase
             'activeLanguage' => 'en',
         ];
 
-        $this->request('/twill/blocks/preview', 'POST', $data)->assertStatus(
-            200
-        );
+        $this->httpRequestAssert('/twill/blocks/preview', 'POST', $data);
 
         $this->assertSee(json_encode(['quote' => $quote]));
     }
@@ -156,10 +174,10 @@ class ModulesAuthorsTest extends ModulesTestBase
     {
         $this->createAuthor();
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/preview/{$this->author->id}",
             'PUT'
-        )->assertStatus(200);
+        );
 
         $this->assertSee(
             'Previews have not been configured on this Twill module, please let the development team know about it.'
@@ -172,11 +190,11 @@ class ModulesAuthorsTest extends ModulesTestBase
             $this->makeFileName('{$resources}/views/site/author.blade.php')
         );
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/preview/{$this->author->id}",
             'PUT',
             ['activeLanguage' => 'en']
-        )->assertStatus(200);
+        );
 
         $this->assertDontSee(
             'Previews have not been configured on this Twill module, please let the development team know about it.'
@@ -194,9 +212,9 @@ class ModulesAuthorsTest extends ModulesTestBase
 
         $this->assertNotNull($this->author->deleted_at);
 
-        $this->request('/twill/personnel/authors/restore', 'PUT', [
+        $this->httpRequestAssert('/twill/personnel/authors/restore', 'PUT', [
             'id' => $this->author->id,
-        ])->assertStatus(200);
+        ]);
 
         $this->assertNothingWrongHappened();
 
@@ -207,9 +225,9 @@ class ModulesAuthorsTest extends ModulesTestBase
 
     public function testCanReturnErrorWhenRestoringWrongAuthor()
     {
-        $this->request('/twill/personnel/authors/restore', 'PUT', [
+        $this->httpRequestAssert('/twill/personnel/authors/restore', 'PUT', [
             'id' => 999999,
-        ])->assertStatus(200);
+        ]);
 
         $this->assertSomethingWrongHappened();
     }
@@ -220,10 +238,10 @@ class ModulesAuthorsTest extends ModulesTestBase
 
         $this->assertFalse($this->author->featured);
 
-        $this->request('/twill/personnel/authors/feature', 'PUT', [
+        $this->httpRequestAssert('/twill/personnel/authors/feature', 'PUT', [
             'id' => $this->author->id,
             'active' => false,
-        ])->assertStatus(200);
+        ]);
 
         $this->assertNothingWrongHappened();
 
@@ -234,10 +252,10 @@ class ModulesAuthorsTest extends ModulesTestBase
 
     public function testCanReturnErrorWhenFeaturingWrongAuthor()
     {
-        $this->request('/twill/personnel/authors/feature', 'PUT', [
+        $this->httpRequestAssert('/twill/personnel/authors/feature', 'PUT', [
             'id' => 999999,
             'active' => true,
-        ])->assertStatus(404);
+        ], 404);
     }
 
     public function testCanChangeOrder()
@@ -254,9 +272,9 @@ class ModulesAuthorsTest extends ModulesTestBase
 
         $this->assertEquals(1, $author1->position);
 
-        $this->request('/twill/personnel/authors/reorder', 'POST', [
+        $this->httpRequestAssert('/twill/personnel/authors/reorder', 'POST', [
             'ids' => [$author1->id, $author2->id],
-        ])->assertStatus(200);
+        ]);
 
         $this->assertNothingWrongHappened();
 
@@ -273,14 +291,14 @@ class ModulesAuthorsTest extends ModulesTestBase
          * TODO
          */
 
-        $this->request('/twill/personnel/authors/reorder', 'POST', [
+        $this->httpRequestAssert('/twill/personnel/authors/reorder', 'POST', [
             'ids' => [1, 2],
-        ])->assertStatus(500);
+        ], 500);
     }
 
     public function testCanGetTags()
     {
-        $this->request('/twill/personnel/authors/tags')->assertStatus(200);
+        $this->httpRequestAssert('/twill/personnel/authors/tags');
 
         $this->assertJson($this->content());
     }
@@ -299,14 +317,34 @@ class ModulesAuthorsTest extends ModulesTestBase
         );
     }
 
+    public function testCanShowAuthorRelationshipColumn()
+    {
+        $this->createAuthor(1);
+        $author = Author::first();
+
+        $this->createCategory(2);
+        $categories = Category::all();
+
+        $author->categories()->attach($categories);
+
+        $this->ajax('/twill/personnel/authors')->assertStatus(200);
+
+        $content = json_decode($this->content(), true);
+
+        $this->assertEquals(
+            $content['tableData'][0]['categoriesTitle'],
+            $categories->pluck('title')->join(', ')
+        );
+    }
+
     public function testCanShowEditForm()
     {
         $this->createAuthor();
         $this->editAuthor();
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}/edit"
-        )->assertStatus(200);
+        );
 
         $this->assertSee($this->name_en);
         $this->assertSee($this->description_en);
@@ -336,10 +374,27 @@ class ModulesAuthorsTest extends ModulesTestBase
 
         putenv('EDIT_IN_MODAL=true');
 
-        $this->request(
+        $this->httpRequestAssert(
             "/twill/personnel/authors/{$this->author->id}/edit"
-        )->assertStatus(200);
+        );
 
         $this->assertSee('v-svg symbol="close_modal"');
+    }
+
+    public function testCanSeeRenderedBlocks()
+    {
+        $this->createAuthor();
+        $this->editAuthor();
+
+        putenv('EDIT_IN_MODAL=false');
+
+        $this->httpRequestAssert(
+            "/twill/personnel/authors/{$this->author->id}/edit"
+        );
+
+        // Check if it can see a rendered block
+        $this->assertSee(
+            '<script*type="text/x-template"*id="a17-block-quote">'
+        );
     }
 }

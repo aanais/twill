@@ -34,9 +34,15 @@ class SettingRepository extends ModuleRepository
      */
     public function byKey($key, $section = null)
     {
-        return $this->model->when($section, function ($query) use ($section) {
+        $settingQuery = $this->model->when($section, function ($query) use ($section) {
             $query->where('section', $section);
-        })->where('key', $key)->exists() ? $this->model->where('key', $key)->with('translations')->first()->value : null;
+        })->where('key', $key);
+
+        if ($settingQuery->exists()) {
+            return $settingQuery->with('translations')->first()->value;
+        }
+
+        return null;
     }
 
     /**
@@ -123,7 +129,7 @@ class SettingRepository extends ModuleRepository
                 }
             } else {
                 $medias =  [
-                    $role => Collection::make($settingsFields['medias'][$role])->mapWithKeys(function ($media, $key) {
+                    $role => Collection::make($settingsFields['medias'][$role])->map(function ($media) {
                         return json_decode($media, true);
                     })->values()->filter()->toArray(),
                 ];
