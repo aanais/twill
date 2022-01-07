@@ -19,6 +19,7 @@
     $storeUrl = $storeUrl ?? '';
     $inModal = $fieldsInModal ?? false;
     $optgroup = $optgroup ?? null;
+    $multiple = $multiple ?? false;
 @endphp
 @if ($unpack ?? false)
     <a17-singleselect
