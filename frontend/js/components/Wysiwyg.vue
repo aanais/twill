@@ -401,7 +401,6 @@
       min-height: 15px * 6;
       caret-color: $color__action;
       color: $color__text--forms;
-      overflow: visible;
 
       &:hover,
       &:focus {
@@ -416,6 +415,7 @@
 
     .wysiwyg__editor--limitHeight .ql-editor {
       min-height: 15px * 10;
+      overflow: visible;
     }
 
     /* Default content styling */
