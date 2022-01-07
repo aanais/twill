@@ -276,24 +276,25 @@
       if (this.quill) return
 
       /* global hljs */
-      this.options.theme = this.options.theme || 'snow'
-      this.options.boundary = this.options.boundary || document.body
-      this.options.modules = this.options.modules || this.defaultModules
+      this.options.theme = this.options.theme || 'snow' // eslint-disable-line
+      this.options.boundary = this.options.boundary || document.body // eslint-disable-line
+      this.options.modules = this.options.modules || this.defaultModules // eslint-disable-line
       const toolbar = {
         container: this.options.modules.toolbar !== undefined ? this.options.modules.toolbar : this.defaultModules.toolbar,
         handlers: {}
       }
-      this.options.modules.clipboard = this.options.modules.clipboard !== undefined ? this.options.modules.clipboard : this.defaultModules.clipboard
-      this.options.modules.keyboard = this.options.modules.keyboard !== undefined ? this.options.modules.keyboard : this.defaultModules.keyboard
-      this.options.modules.syntax = this.options.modules.syntax !== undefined && this.options.modules.syntax ? { highlight: text => hljs.highlightAuto(text).value } : this.defaultModules.syntax
-      this.options.placeholder = this.options.placeholder || this.placeholder
-      this.options.readOnly = this.options.readOnly !== undefined ? this.options.readOnly : this.readonly
-      this.options.formats = QuillConfiguration.getFormats(this.options.modules.toolbar) // Formats are based on current toolbar configuration
-      this.options.bounds = this.$refs.editor
+      this.options.modules.clipboard = this.options.modules.clipboard !== undefined ? this.options.modules.clipboard : this.defaultModules.clipboard // eslint-disable-line
+      this.options.modules.keyboard = this.options.modules.keyboard !== undefined ? this.options.modules.keyboard : this.defaultModules.keyboard // eslint-disable-line
+      this.options.modules.syntax = this.options.modules.syntax !== undefined && this.options.modules.syntax ? { highlight: text => hljs.highlightAuto(text).value } : this.defaultModules.syntax // eslint-disable-line
+      this.options.placeholder = this.options.placeholder || this.placeholder // eslint-disable-line
+      this.options.readOnly = this.options.readOnly !== undefined ? this.options.readOnly : this.readonly // eslint-disable-line
+      this.options.formats = QuillConfiguration.getFormats(this.options.modules.toolbar) // eslint-disable-line
+      // Formats are based on current toolbar configuration
+      this.options.bounds = this.$refs.editor // eslint-disable-line
 
       // Ensure pasting content do not make editor scroll to the top
       // @see https://github.com/quilljs/quill/issues/1374#issuecomment-545112021
-      this.options.scrollingContainer = 'html'
+      this.options.scrollingContainer = 'html' // eslint-disable-line
 
       // register custom handlers
       // register anchor toolbar handler
@@ -301,7 +302,7 @@
         toolbar.handlers.anchor = this.anchorHandler
       }
 
-      this.options.modules.toolbar = toolbar
+      this.options.modules.toolbar = toolbar // eslint-disable-line
 
       if (this.options.modules.syntax && typeof hljs === 'undefined') {
         const id = 'highlight-js-script'
