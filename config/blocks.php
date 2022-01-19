@@ -60,10 +60,6 @@ return [
         'source' => [
             'blocks' => [
                 [
-                    'path' => base_path('vendor/area17/twill/src/Commands/stubs/blocks'),
-                    'source' => A17\Twill\Services\Blocks\Block::SOURCE_TWILL,
-                ],
-                [
                     'path' => resource_path('views/admin/blocks'),
                     'source' => A17\Twill\Services\Blocks\Block::SOURCE_APP,
                 ],
