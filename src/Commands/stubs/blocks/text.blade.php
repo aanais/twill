@@ -1,5 +1,4 @@
 @twillBlockCompiled('true')
-@twillBlockComponent('a17-block-wysiwyg')
 @twillBlockTitle('Body text')
 @twillBlockIcon('text')
 @twillBlockGroup('twill')

@@ -1,5 +1,4 @@
 @twillBlockCompiled('true')
-@twillBlockComponent('a17-block-image')
 @twillBlockTitle('Image')
 @twillBlockIcon('image')
 @twillBlockGroup('twill')
