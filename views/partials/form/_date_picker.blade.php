@@ -5,6 +5,7 @@
     $note = $note ?? false;
     $inModal = $fieldsInModal ?? false;
     $timeOnly = $timeOnly ?? false;
+    $translated = $translated ?? false;
 @endphp
 
 <a17-datepicker
@@ -27,11 +28,8 @@
     in-store="date"
 ></a17-datepicker>
 
-@unless($renderForBlocks || $renderForModal || (!isset($item->$name) && null == $formFieldsValue = getFormFieldsValue($form_fields, $name)))
+@unless($renderForBlocks || $renderForModal)
 @push('vuexStore')
-    window['{{ config('twill.js_namespace') }}'].STORE.form.fields.push({
-        name: '{{ $name }}',
-        value: {!! json_encode(e($item->$name ?? $formFieldsValue)) !!}
-    })
+    @include('twill::partials.form.utils._translatable_input_store')
 @endpush
 @endunless
